@@ -4,9 +4,11 @@ import {
   Column,
   BaseEntity,
   BeforeInsert,
+  OneToMany,
 } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
+import { Bill } from 'src/bills/entities/bill.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -24,6 +26,9 @@ export class User extends BaseEntity {
 
   @Column()
   password: string;
+
+  @OneToMany(() => Bill, (bill) => bill.user, { cascade: true })
+  bills: Array<Bill>;
 
   @BeforeInsert()
   async setPassword(password: string) {

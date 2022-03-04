@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { User } from 'src/auth/entities/user.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  OneToOne,
+  ManyToOne,
+} from 'typeorm';
 
 @Entity()
 export class Bill extends BaseEntity {
@@ -13,4 +21,7 @@ export class Bill extends BaseEntity {
 
   @Column()
   amount: number;
+
+  @ManyToOne(() => User, (user) => user.bills)
+  user: User;
 }

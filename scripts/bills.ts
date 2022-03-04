@@ -1,26 +1,48 @@
+import 'reflect-metadata';
 import { Bill } from '../src/bills/entities/bill.entity';
+import { User } from '../src/auth/entities/user.entity';
 import { Connection, createConnection, getRepository } from 'typeorm';
 import { readFileSync } from 'fs';
 import * as path from 'path';
-import { User } from '../src/auth/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { BillsController } from 'src/bills/bills.controller';
 
 const config = JSON.parse(
-  readFileSync(path.resolve(__dirname, '..', 'ormconfig.json'), 'utf-8'),
+  readFileSync(path.resolve(__dirname, '..', '..', 'ormconfig.json'), 'utf-8'),
 );
 
 createConnection({
   ...config,
   entities: [Bill, User],
-}).then((c: Connection) => {
-  User.createQueryBuilder()
-    .where('email = :email', { email: 'mandrewdarts@gmail.com' })
-    .getOne()
-    .then(async (user) => {
-      console.log(user);
-      if (user) {
-        console.log(user.password);
-        console.log(await bcrypt.compare('passord', user.password));
-      }
-    });
+  // entities: [Bill],
+}).then(async (c: Connection) => {
+  const user = getRepository(User).create({
+    first_name: 'Andrew',
+    last_name: 'Darts',
+    email: 'mandrewdarts@gmail.com',
+    password: 'password',
+  });
+
+  const bill1 = await getRepository(Bill).create({
+    name: 'Internet',
+    amount: 7000,
+    due: new Date(),
+  });
+
+  const bill2 = await getRepository(Bill).create({
+    name: 'Rent',
+    amount: 2100,
+    due: new Date(),
+  });
+
+  user.bills = [bill1, bill2];
+
+  await user.save();
+
+  const u = await getRepository(User).findOne(
+    { email: 'mandrewdarts@gmail.com' },
+    { relations: ['bills'] },
+  );
+
+  console.log(u);
 });
